@@ -18,4 +18,8 @@ export class AnalyticsService {
   async recentLeads(clinicId: string, limit = 50): Promise<Lead[]> {
     return this.leads.listByClinic(clinicId, limit);
   }
+
+  async leadDetail(leadId: string) {
+    return this.leads.findByIdWithHistory(leadId);
+  }
 }

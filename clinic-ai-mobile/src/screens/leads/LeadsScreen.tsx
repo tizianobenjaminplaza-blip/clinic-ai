@@ -5,16 +5,23 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LeadCard } from '../../components/LeadCard';
 import { metricsApi, type Lead } from '../../services/api';
+import type { LeadsStackParamList } from '../../navigation/types';
 
 interface Props {
   clinicId: string;
 }
 
+type Nav = NativeStackNavigationProp<LeadsStackParamList, 'LeadsList'>;
+
 export function LeadsScreen({ clinicId }: Props) {
+  const navigation = useNavigation<Nav>();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(true);
@@ -58,7 +65,11 @@ export function LeadsScreen({ clinicId }: Props) {
       <FlatList
         data={filtered}
         keyExtractor={(l) => l.id}
-        renderItem={({ item }) => <LeadCard lead={item} />}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => navigation.navigate('LeadDetail', { leadId: item.id })}>
+            <LeadCard lead={item} />
+          </TouchableOpacity>
+        )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <Text style={styles.empty}>No hay leads que coincidan</Text>

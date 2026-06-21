@@ -2,8 +2,10 @@ import { Router, json } from 'express';
 import { container } from '../../container.js';
 import { asyncHandler } from '../../infrastructure/middleware/errorMiddleware.js';
 
-const { paymentController, whatsappController, analyticsController, abTestingController, reportController } =
-  container;
+const {
+  paymentController, whatsappController, analyticsController,
+  abTestingController, reportController, authController,
+} = container;
 
 export const router = Router();
 
@@ -35,3 +37,10 @@ router.post('/ab-tests/outcome', json(), asyncHandler(abTestingController.record
 // ─── Reports ──────────────────────────────────────────────
 router.post('/clinics/:clinicId/reports', json(), asyncHandler(reportController.create));
 router.get('/clinics/:clinicId/reports', asyncHandler(reportController.list));
+
+// ─── Lead detail ──────────────────────────────────────────
+router.get('/leads/:leadId', asyncHandler(analyticsController.leadDetail));
+
+// ─── Auth / 2FA ───────────────────────────────────────────
+router.post('/auth/2fa/send',   json(), asyncHandler(authController.sendCode));
+router.post('/auth/2fa/verify', json(), authController.verifyCode);

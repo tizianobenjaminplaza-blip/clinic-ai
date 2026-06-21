@@ -54,6 +54,6 @@ export class WhatsAppService {
     const reply = await this.agent.generateReply(ctx, history, msg.text);
 
     await this.whatsapp.sendText(msg.fromPhone, reply);
-    await this.leadTracking.recordReply(lead.id, reply);
+    await this.leadTracking.recordReply(lead.id, reply, clinic.id);
   }
 }

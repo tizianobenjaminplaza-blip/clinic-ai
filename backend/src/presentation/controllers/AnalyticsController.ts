@@ -16,4 +16,11 @@ export class AnalyticsController {
     const data = await this.analytics.recentLeads(req.params.clinicId, limit);
     res.json(data);
   };
+
+  /** GET /api/leads/:leadId */
+  leadDetail = async (req: Request, res: Response): Promise<void> => {
+    const data = await this.analytics.leadDetail(req.params.leadId);
+    if (!data) { res.status(404).json({ error: 'Lead no encontrado' }); return; }
+    res.json(data);
+  };
 }

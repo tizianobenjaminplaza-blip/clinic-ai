@@ -57,6 +57,7 @@ export interface ILeadRepository {
   markEngaged(leadId: string): Promise<void>;
   listByClinic(clinicId: string, limit: number): Promise<Lead[]>;
   metrics(clinicId: string): Promise<LeadMetrics>;
+  findByIdWithHistory(leadId: string): Promise<(Lead & { interactions: LeadInteraction[] }) | null>;
 }
 
 export interface IABTestingRepository {

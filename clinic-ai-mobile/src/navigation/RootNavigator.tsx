@@ -1,14 +1,33 @@
 import { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text } from 'react-native';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { DashboardScreen } from '../screens/dashboard/DashboardScreen';
 import { LeadsScreen } from '../screens/leads/LeadsScreen';
+import { LeadDetailScreen } from '../screens/leads/LeadDetailScreen';
 import { AnalyticsScreen } from '../screens/analytics/AnalyticsScreen';
 import { authStorage } from '../services/auth';
+import type { LeadsStackParamList } from './types';
 
 const Tab = createBottomTabNavigator();
+const LeadsStack = createNativeStackNavigator<LeadsStackParamList>();
+
+function LeadsNavigator({ clinicId }: { clinicId: string }) {
+  return (
+    <LeadsStack.Navigator>
+      <LeadsStack.Screen name="LeadsList" options={{ title: 'Leads' }}>
+        {() => <LeadsScreen clinicId={clinicId} />}
+      </LeadsStack.Screen>
+      <LeadsStack.Screen
+        name="LeadDetail"
+        component={LeadDetailScreen}
+        options={{ title: 'Detalle de lead' }}
+      />
+    </LeadsStack.Navigator>
+  );
+}
 
 function TabIcon({ icon }: { icon: string }) {
   return <Text style={{ fontSize: 18 }}>{icon}</Text>;
@@ -54,9 +73,9 @@ export function RootNavigator() {
         </Tab.Screen>
         <Tab.Screen
           name="Leads"
-          options={{ tabBarIcon: () => <TabIcon icon="👥" /> }}
+          options={{ tabBarIcon: () => <TabIcon icon="👥" />, headerShown: false }}
         >
-          {() => <LeadsScreen clinicId={clinicId} />}
+          {() => <LeadsNavigator clinicId={clinicId} />}
         </Tab.Screen>
         <Tab.Screen
           name="Analytics"

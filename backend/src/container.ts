@@ -18,6 +18,7 @@ import { WhatsAppService } from './application/services/WhatsAppService.js';
 import { AnalyticsService } from './application/services/AnalyticsService.js';
 import { ABTestingService } from './application/services/ABTestingService.js';
 import { ReportService } from './application/services/ReportService.js';
+import { TwoFactorAuthService } from './application/services/TwoFactorAuthService.js';
 import { ActivateAgentUseCase } from './application/usecases/ActivateAgentUseCase.js';
 
 import { PaymentController } from './presentation/controllers/PaymentController.js';
@@ -25,6 +26,7 @@ import { WhatsAppController } from './presentation/controllers/WhatsAppControlle
 import { AnalyticsController } from './presentation/controllers/AnalyticsController.js';
 import { ABTestingController } from './presentation/controllers/ABTestingController.js';
 import { ReportController } from './presentation/controllers/ReportController.js';
+import { AuthController } from './presentation/controllers/AuthController.js';
 
 // Repositories
 const clinicRepo = new ClinicRepository(prisma);
@@ -44,6 +46,7 @@ const leadTrackingService = new LeadTrackingService(leadRepo);
 const subscriptionService = new SubscriptionService(subscriptionRepo);
 const analyticsService = new AnalyticsService(leadRepo);
 const abTestingService = new ABTestingService(abTestingRepo, clinicRepo, agentService);
+const twoFAService = new TwoFactorAuthService(emailClient);
 const reportService = new ReportService(reportRepo, clinicRepo, analyticsService, emailClient);
 const whatsappService = new WhatsAppService(
   clinicRepo,
@@ -68,4 +71,5 @@ export const container = {
   analyticsController: new AnalyticsController(analyticsService),
   abTestingController: new ABTestingController(abTestingService),
   reportController: new ReportController(reportService),
+  authController: new AuthController(twoFAService),
 };

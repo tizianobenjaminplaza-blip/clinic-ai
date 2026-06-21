@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { Lead, LeadStatus } from '../../services/api';
 
 const statusStyles: Record<LeadStatus, string> = {
@@ -17,6 +18,7 @@ export function StatusBadge({ status }: { status: LeadStatus }) {
 }
 
 export function LeadMetricsPanel({ leads }: { leads: Lead[] }) {
+  const navigate = useNavigate();
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <h2 className="text-sm font-semibold text-slate-700 px-5 py-4 border-b border-slate-100">
@@ -40,7 +42,11 @@ export function LeadMetricsPanel({ leads }: { leads: Lead[] }) {
             </tr>
           )}
           {leads.map((lead) => (
-            <tr key={lead.id} className="border-t border-slate-50 hover:bg-slate-50">
+            <tr
+              key={lead.id}
+              className="border-t border-slate-50 hover:bg-slate-50 cursor-pointer"
+              onClick={() => navigate(`/leads/${lead.id}`)}
+            >
               <td className="px-5 py-3 font-medium text-slate-700">{lead.name ?? '—'}</td>
               <td className="px-5 py-3 font-mono text-slate-500">{lead.phone}</td>
               <td className="px-5 py-3">

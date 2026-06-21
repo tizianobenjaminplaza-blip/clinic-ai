@@ -109,6 +109,24 @@ export class LeadRepository implements ILeadRepository {
     return rows.map(toLead);
   }
 
+  async findByIdWithHistory(leadId: string) {
+    const row = await this.prisma.lead.findUnique({
+      where: { id: leadId },
+      include: { interactions: { orderBy: { timestamp: 'asc' } } },
+    });
+    if (!row) return null;
+    return {
+      ...toLead(row),
+      interactions: row.interactions.map((i) => ({
+        id: i.id,
+        leadId: i.leadId,
+        senderRole: i.senderRole as 'LEAD' | 'AGENT',
+        content: i.content,
+        timestamp: i.timestamp,
+      })),
+    };
+  }
+
   async metrics(clinicId: string): Promise<LeadMetrics> {
     const [leads, grouped, totalMessages] = await Promise.all([
       this.prisma.lead.findMany({
