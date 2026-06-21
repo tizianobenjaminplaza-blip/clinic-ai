@@ -61,3 +61,42 @@ export interface ClinicContext {
   faqs: { question: string; answer: string }[];
   teamMembers: { name: string; role: string }[];
 }
+
+export type ABTestStatus = 'DRAFT' | 'RUNNING' | 'COMPLETED';
+
+export interface MessageVariantDraft {
+  name: string;
+  message: string;
+  tone: string;
+  includesOffer: boolean;
+}
+
+export interface MessageVariant extends MessageVariantDraft {
+  id: string;
+  abTestId: string;
+}
+
+export interface ABTest {
+  id: string;
+  clinicId: string;
+  status: ABTestStatus;
+  consentGiven: boolean;
+  generatedAt: Date;
+  variants: MessageVariant[];
+}
+
+export interface VariantResult {
+  variantId: string;
+  name: string;
+  sent: number;
+  converted: number;
+  conversionRate: number;
+}
+
+export interface LeadReport {
+  id: string;
+  clinicId: string;
+  period: string;
+  pdfUrl: string | null;
+  createdAt: Date;
+}

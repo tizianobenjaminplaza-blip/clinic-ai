@@ -2,7 +2,8 @@ import { Router, json } from 'express';
 import { container } from '../../container.js';
 import { asyncHandler } from '../../infrastructure/middleware/errorMiddleware.js';
 
-const { paymentController, whatsappController, analyticsController } = container;
+const { paymentController, whatsappController, analyticsController, abTestingController, reportController } =
+  container;
 
 export const router = Router();
 
@@ -24,3 +25,13 @@ router.post('/whatsapp/webhook', json(), whatsappController.receive);
 // ─── Analytics / dashboard reads ──────────────────────────
 router.get('/clinics/:clinicId/metrics', asyncHandler(analyticsController.overview));
 router.get('/clinics/:clinicId/leads', asyncHandler(analyticsController.leads));
+
+// ─── A/B testing ──────────────────────────────────────────
+router.post('/clinics/:clinicId/ab-tests', json(), asyncHandler(abTestingController.create));
+router.get('/clinics/:clinicId/ab-tests', asyncHandler(abTestingController.list));
+router.get('/ab-tests/:id/results', asyncHandler(abTestingController.results));
+router.post('/ab-tests/outcome', json(), asyncHandler(abTestingController.recordOutcome));
+
+// ─── Reports ──────────────────────────────────────────────
+router.post('/clinics/:clinicId/reports', json(), asyncHandler(reportController.create));
+router.get('/clinics/:clinicId/reports', asyncHandler(reportController.list));

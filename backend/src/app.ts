@@ -1,3 +1,4 @@
+import path from 'node:path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -14,6 +15,9 @@ export function createApp(): express.Express {
   // Stripe webhook MUST receive the raw body for signature verification.
   // This is mounted before any JSON body parser touches the path.
   app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
+  // Generated PDF reports.
+  app.use('/reports', express.static(path.resolve(process.cwd(), 'reports')));
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'clinic-ai-backend' });

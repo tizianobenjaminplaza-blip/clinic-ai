@@ -1,12 +1,16 @@
 import type {
+  ABTest,
   Clinic,
   ClinicContext,
   Lead,
   LeadInteraction,
+  LeadReport,
+  MessageVariantDraft,
   Payment,
   PaymentStatus,
   SenderRole,
   Subscription,
+  VariantResult,
 } from '../entities/index.js';
 
 export interface IClinicRepository {
@@ -53,4 +57,17 @@ export interface ILeadRepository {
   markEngaged(leadId: string): Promise<void>;
   listByClinic(clinicId: string, limit: number): Promise<Lead[]>;
   metrics(clinicId: string): Promise<LeadMetrics>;
+}
+
+export interface IABTestingRepository {
+  create(clinicId: string, consentGiven: boolean, variants: MessageVariantDraft[]): Promise<ABTest>;
+  findById(id: string): Promise<ABTest | null>;
+  listByClinic(clinicId: string): Promise<ABTest[]>;
+  recordResult(variantId: string, leadId: string, converted: boolean): Promise<void>;
+  variantResults(abTestId: string): Promise<VariantResult[]>;
+}
+
+export interface IReportRepository {
+  create(clinicId: string, period: string, pdfUrl: string): Promise<LeadReport>;
+  listByClinic(clinicId: string): Promise<LeadReport[]>;
 }

@@ -16,6 +16,9 @@ build/
 # Prisma
 backend/prisma/*.db
 
+# Generated PDF reports
+backend/reports/
+
 # Logs
 logs/
 *.log

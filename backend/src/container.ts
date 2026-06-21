@@ -5,6 +5,8 @@ import { ClinicRepository } from './infrastructure/repositories/ClinicRepository
 import { PaymentRepository } from './infrastructure/repositories/PaymentRepository.js';
 import { SubscriptionRepository } from './infrastructure/repositories/SubscriptionRepository.js';
 import { LeadRepository } from './infrastructure/repositories/LeadRepository.js';
+import { ABTestingRepository } from './infrastructure/repositories/ABTestingRepository.js';
+import { ReportRepository } from './infrastructure/repositories/ReportRepository.js';
 
 import { WhatsAppClient } from './infrastructure/external/WhatsAppClient.js';
 import { EmailClient } from './infrastructure/external/EmailClient.js';
@@ -14,17 +16,23 @@ import { LeadTrackingService } from './application/services/LeadTrackingService.
 import { SubscriptionService } from './application/services/SubscriptionService.js';
 import { WhatsAppService } from './application/services/WhatsAppService.js';
 import { AnalyticsService } from './application/services/AnalyticsService.js';
+import { ABTestingService } from './application/services/ABTestingService.js';
+import { ReportService } from './application/services/ReportService.js';
 import { ActivateAgentUseCase } from './application/usecases/ActivateAgentUseCase.js';
 
 import { PaymentController } from './presentation/controllers/PaymentController.js';
 import { WhatsAppController } from './presentation/controllers/WhatsAppController.js';
 import { AnalyticsController } from './presentation/controllers/AnalyticsController.js';
+import { ABTestingController } from './presentation/controllers/ABTestingController.js';
+import { ReportController } from './presentation/controllers/ReportController.js';
 
 // Repositories
 const clinicRepo = new ClinicRepository(prisma);
 const paymentRepo = new PaymentRepository(prisma);
 const subscriptionRepo = new SubscriptionRepository(prisma);
 const leadRepo = new LeadRepository(prisma);
+const abTestingRepo = new ABTestingRepository(prisma);
+const reportRepo = new ReportRepository(prisma);
 
 // External clients
 const whatsappClient = new WhatsAppClient();
@@ -35,6 +43,8 @@ const agentService = new AgentService();
 const leadTrackingService = new LeadTrackingService(leadRepo);
 const subscriptionService = new SubscriptionService(subscriptionRepo);
 const analyticsService = new AnalyticsService(leadRepo);
+const abTestingService = new ABTestingService(abTestingRepo, clinicRepo, agentService);
+const reportService = new ReportService(reportRepo, clinicRepo, analyticsService, emailClient);
 const whatsappService = new WhatsAppService(
   clinicRepo,
   subscriptionService,
@@ -56,4 +66,6 @@ export const container = {
   paymentController: new PaymentController(activateAgentUseCase),
   whatsappController: new WhatsAppController(whatsappService),
   analyticsController: new AnalyticsController(analyticsService),
+  abTestingController: new ABTestingController(abTestingService),
+  reportController: new ReportController(reportService),
 };
