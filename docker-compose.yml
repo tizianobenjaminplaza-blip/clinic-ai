@@ -33,6 +33,17 @@ services:
       postgres:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && node dist/server.js"
+    volumes:
+      - reports:/app/reports
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
+  reports:

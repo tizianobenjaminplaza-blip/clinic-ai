@@ -1,0 +1,64 @@
+name: Deploy to EKS
+
+on:
+  workflow_run:
+    workflows: [Build & push Docker images]
+    types: [completed]
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: clinic-ai-prod
+  NAMESPACE: clinic-ai
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+
+      - name: Apply K8s manifests
+        run: kubectl apply -f k8s/ --namespace ${{ env.NAMESPACE }}
+
+      - name: Roll out backend
+        run: |
+          kubectl set image deployment/backend \
+            backend=ghcr.io/${{ github.repository_owner }}/clinic-ai-backend:sha-${{ github.sha }} \
+            -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/backend -n ${{ env.NAMESPACE }} --timeout=5m
+
+      - name: Roll out frontend
+        run: |
+          kubectl set image deployment/frontend \
+            frontend=ghcr.io/${{ github.repository_owner }}/clinic-ai-frontend:sha-${{ github.sha }} \
+            -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/frontend -n ${{ env.NAMESPACE }} --timeout=3m
+
+      - name: Smoke test
+        run: |
+          BACKEND_URL=$(kubectl get svc backend -n ${{ env.NAMESPACE }} \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl --fail --retry 3 --retry-delay 5 "http://${BACKEND_URL}:4000/health"
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {"text":"❌ Clinic AI deploy FAILED on ${{ github.sha }} — check Actions"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -4,6 +4,8 @@ const links = [
   { to: '/dashboard', label: 'Dashboard', icon: '📊' },
   { to: '/leads', label: 'Leads', icon: '👥' },
   { to: '/analytics', label: 'Analytics', icon: '📈' },
+  { to: '/ab-testing', label: 'A/B Testing', icon: '🧪' },
+  { to: '/reports', label: 'Reportes', icon: '📄' },
 ];
 
 export function Sidebar() {

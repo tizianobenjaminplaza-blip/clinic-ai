@@ -4,6 +4,8 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Leads } from './pages/Leads';
 import { Analytics } from './pages/Analytics';
+import { ABTesting } from './pages/ABTesting';
+import { Reports } from './pages/Reports';
 import type { ReactNode } from 'react';
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -38,6 +40,22 @@ export default function App() {
             element={
               <RequireAuth>
                 <Analytics />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ab-testing"
+            element={
+              <RequireAuth>
+                <ABTesting />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <RequireAuth>
+                <Reports />
               </RequireAuth>
             }
           />

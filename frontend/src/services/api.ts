@@ -42,3 +42,58 @@ export const metricsApi = {
   leads: (clinicId: string) =>
     api.get<Lead[]>(`/clinics/${clinicId}/leads`).then((r) => r.data),
 };
+
+// ─── A/B Testing ──────────────────────────────────────────
+export type ABTestStatus = 'DRAFT' | 'RUNNING' | 'COMPLETED';
+
+export interface MessageVariant {
+  id: string;
+  name: string;
+  message: string;
+  tone: string;
+  includesOffer: boolean;
+}
+
+export interface ABTest {
+  id: string;
+  clinicId: string;
+  status: ABTestStatus;
+  consentGiven: boolean;
+  generatedAt: string;
+  variants: MessageVariant[];
+}
+
+export interface VariantResult {
+  variantId: string;
+  name: string;
+  sent: number;
+  converted: number;
+  conversionRate: number;
+}
+
+export const abTestApi = {
+  create: (clinicId: string, variantCount = 3) =>
+    api
+      .post<ABTest>(`/clinics/${clinicId}/ab-tests`, { consentGiven: true, variantCount })
+      .then((r) => r.data),
+  list: (clinicId: string) =>
+    api.get<ABTest[]>(`/clinics/${clinicId}/ab-tests`).then((r) => r.data),
+  results: (testId: string) =>
+    api.get<VariantResult[]>(`/ab-tests/${testId}/results`).then((r) => r.data),
+};
+
+// ─── Reports ──────────────────────────────────────────────
+export interface Report {
+  id: string;
+  clinicId: string;
+  period: string;
+  pdfUrl: string | null;
+  createdAt: string;
+}
+
+export const reportApi = {
+  generate: (clinicId: string, period: string) =>
+    api.post<Report>(`/clinics/${clinicId}/reports`, { period }).then((r) => r.data),
+  list: (clinicId: string) =>
+    api.get<Report[]>(`/clinics/${clinicId}/reports`).then((r) => r.data),
+};
