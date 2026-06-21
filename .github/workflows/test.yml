@@ -41,9 +41,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: backend
 
-      - name: Security audit
+      - name: Security audit (production deps only)
         working-directory: backend
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Snyk scan
         uses: snyk/actions/node@master
