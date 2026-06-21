@@ -13,10 +13,12 @@ import { AgentService } from './application/services/AgentService.js';
 import { LeadTrackingService } from './application/services/LeadTrackingService.js';
 import { SubscriptionService } from './application/services/SubscriptionService.js';
 import { WhatsAppService } from './application/services/WhatsAppService.js';
+import { AnalyticsService } from './application/services/AnalyticsService.js';
 import { ActivateAgentUseCase } from './application/usecases/ActivateAgentUseCase.js';
 
 import { PaymentController } from './presentation/controllers/PaymentController.js';
 import { WhatsAppController } from './presentation/controllers/WhatsAppController.js';
+import { AnalyticsController } from './presentation/controllers/AnalyticsController.js';
 
 // Repositories
 const clinicRepo = new ClinicRepository(prisma);
@@ -32,6 +34,7 @@ const emailClient = new EmailClient();
 const agentService = new AgentService();
 const leadTrackingService = new LeadTrackingService(leadRepo);
 const subscriptionService = new SubscriptionService(subscriptionRepo);
+const analyticsService = new AnalyticsService(leadRepo);
 const whatsappService = new WhatsAppService(
   clinicRepo,
   subscriptionService,
@@ -52,4 +55,5 @@ const activateAgentUseCase = new ActivateAgentUseCase(
 export const container = {
   paymentController: new PaymentController(activateAgentUseCase),
   whatsappController: new WhatsAppController(whatsappService),
+  analyticsController: new AnalyticsController(analyticsService),
 };

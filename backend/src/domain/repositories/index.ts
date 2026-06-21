@@ -32,6 +32,15 @@ export interface ISubscriptionRepository {
   activate(clinicId: string): Promise<Subscription>;
 }
 
+export interface LeadMetrics {
+  totalLeads: number;
+  byStatus: Record<string, number>;
+  conversionRate: number;
+  totalMessages: number;
+  /** Daily new-lead counts for the last 14 days, oldest first. */
+  leadsOverTime: { date: string; count: number }[];
+}
+
 export interface ILeadRepository {
   findByClinicAndPhone(clinicId: string, phone: string): Promise<Lead | null>;
   upsertFromMessage(clinicId: string, phone: string, name?: string): Promise<Lead>;
@@ -42,4 +51,6 @@ export interface ILeadRepository {
   ): Promise<LeadInteraction>;
   recentInteractions(leadId: string, limit: number): Promise<LeadInteraction[]>;
   markEngaged(leadId: string): Promise<void>;
+  listByClinic(clinicId: string, limit: number): Promise<Lead[]>;
+  metrics(clinicId: string): Promise<LeadMetrics>;
 }

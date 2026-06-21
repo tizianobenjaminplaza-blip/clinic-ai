@@ -2,7 +2,7 @@ import { Router, json } from 'express';
 import { container } from '../../container.js';
 import { asyncHandler } from '../../infrastructure/middleware/errorMiddleware.js';
 
-const { paymentController, whatsappController } = container;
+const { paymentController, whatsappController, analyticsController } = container;
 
 export const router = Router();
 
@@ -20,3 +20,7 @@ router.post(
 // ─── WhatsApp ─────────────────────────────────────────────
 router.get('/whatsapp/webhook', whatsappController.verify);
 router.post('/whatsapp/webhook', json(), whatsappController.receive);
+
+// ─── Analytics / dashboard reads ──────────────────────────
+router.get('/clinics/:clinicId/metrics', asyncHandler(analyticsController.overview));
+router.get('/clinics/:clinicId/leads', asyncHandler(analyticsController.leads));

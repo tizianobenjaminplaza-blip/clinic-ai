@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import type { ILeadRepository } from '../../domain/repositories/index.js';
+import type { ILeadRepository, LeadMetrics } from '../../domain/repositories/index.js';
 import type { Lead, LeadInteraction, LeadStatus, SenderRole } from '../../domain/entities/index.js';
 
 function toLead(row: {
@@ -98,5 +98,52 @@ export class LeadRepository implements ILeadRepository {
       where: { id: leadId },
       data: { status: 'ENGAGED' },
     });
+  }
+
+  async listByClinic(clinicId: string, limit: number): Promise<Lead[]> {
+    const rows = await this.prisma.lead.findMany({
+      where: { clinicId },
+      orderBy: { lastMessageDate: 'desc' },
+      take: limit,
+    });
+    return rows.map(toLead);
+  }
+
+  async metrics(clinicId: string): Promise<LeadMetrics> {
+    const [leads, grouped, totalMessages] = await Promise.all([
+      this.prisma.lead.findMany({
+        where: { clinicId },
+        select: { status: true, createdAt: true },
+      }),
+      this.prisma.lead.groupBy({
+        by: ['status'],
+        where: { clinicId },
+        _count: { _all: true },
+      }),
+      this.prisma.leadInteraction.count({ where: { lead: { clinicId } } }),
+    ]);
+
+    const byStatus: Record<string, number> = {};
+    for (const g of grouped) byStatus[g.status] = g._count._all;
+
+    const totalLeads = leads.length;
+    const converted = byStatus['CONVERTED'] ?? 0;
+    const conversionRate = totalLeads > 0 ? Math.round((converted / totalLeads) * 1000) / 10 : 0;
+
+    // Build last-14-day daily new-lead series.
+    const days = 14;
+    const series = new Map<string, number>();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      series.set(d.toISOString().slice(0, 10), 0);
+    }
+    for (const l of leads) {
+      const key = l.createdAt.toISOString().slice(0, 10);
+      if (series.has(key)) series.set(key, (series.get(key) ?? 0) + 1);
+    }
+    const leadsOverTime = [...series.entries()].map(([date, count]) => ({ date, count }));
+
+    return { totalLeads, byStatus, conversionRate, totalMessages, leadsOverTime };
   }
 }
