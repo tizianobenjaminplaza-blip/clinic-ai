@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clinicai
+      POSTGRES_PASSWORD: clinicai
+      POSTGRES_DB: clinicai
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # Opcional: interfaz web para ver la BD
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+
+volumes:
+  pg_data:
