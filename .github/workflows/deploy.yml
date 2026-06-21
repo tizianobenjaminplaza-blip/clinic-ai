@@ -1,10 +1,14 @@
 name: Deploy to EKS
 
+# Manual deploy: run from the Actions tab → "Deploy to EKS" → "Run workflow".
+# This avoids failing automatically on every push before AWS infra exists.
 on:
-  workflow_run:
-    workflows: [Build & push Docker images]
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Escribe "deploy" para confirmar el despliegue a producción'
+        required: true
+        default: ''
 
 env:
   AWS_REGION: us-east-1
@@ -15,11 +19,20 @@ jobs:
   deploy:
     name: Deploy to production
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.inputs.confirm == 'deploy' }}
     environment: production
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify AWS credentials are configured
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "::error::Faltan los secrets AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY."
+            echo "::error::Configúralos en Settings → Secrets and variables → Actions antes de desplegar."
+            exit 1
+          fi
+          echo "✅ Credenciales AWS presentes."
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
