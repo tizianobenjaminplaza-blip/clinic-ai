@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+// In dev, VITE_API_URL is unset → '/api' goes through the Vite proxy.
+// In production (Vercel), set VITE_API_URL to the backend URL (e.g. Render).
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${API_BASE}/api`,
   headers: { 'Content-Type': 'application/json' },
 });
 

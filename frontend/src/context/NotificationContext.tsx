@@ -35,7 +35,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!clinicId) return;
 
-    const socket = io('/', { path: '/socket.io', transports: ['websocket'] });
+    // Dev: VITE_API_URL unset → '/' (Vite proxies /socket.io). Prod: backend URL.
+    const socketUrl = import.meta.env.VITE_API_URL || '/';
+    const socket = io(socketUrl, { path: '/socket.io', transports: ['websocket'] });
     socketRef.current = socket;
     socket.emit('join:clinic', clinicId);
 

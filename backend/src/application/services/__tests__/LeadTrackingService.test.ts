@@ -30,6 +30,7 @@ describe('LeadTrackingService', () => {
       listByClinic: vi.fn().mockResolvedValue([]),
       metrics: vi.fn(),
       findByIdWithHistory: vi.fn().mockResolvedValue(null),
+      deleteByClinicAndPhone: vi.fn().mockResolvedValue(undefined),
     };
     const service = new LeadTrackingService(repo);
 
@@ -50,6 +51,7 @@ describe('LeadTrackingService', () => {
       listByClinic: vi.fn().mockResolvedValue([]),
       metrics: vi.fn(),
       findByIdWithHistory: vi.fn().mockResolvedValue(null),
+      deleteByClinicAndPhone: vi.fn().mockResolvedValue(undefined),
     };
     const service = new LeadTrackingService(repo);
 

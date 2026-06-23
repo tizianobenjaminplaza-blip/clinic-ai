@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { reportApi, type Report } from '../services/api';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
@@ -45,18 +46,20 @@ export function Reports() {
   return (
     <DashboardLayout title="Reportes">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-slate-500">Reportes PDF mensuales enviados por email.</p>
-        <button
+        <p className="text-sm text-ivory-400">Reportes PDF mensuales enviados por email.</p>
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           disabled={generating}
           onClick={generate}
-          className="px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition"
+          className="px-4 py-2 bg-emerald-gradient text-carbon-900 text-sm font-medium rounded-xl shadow-glow disabled:opacity-50 transition"
         >
           {generating ? 'Generando…' : `Generar ${currentPeriod()}`}
-        </button>
+        </motion.button>
       </div>
-      {error && <p className="mb-4 text-rose-600 text-sm">{error}</p>}
+      {error && <p className="mb-4 text-rose-400 text-sm">{error}</p>}
       {loading ? (
-        <p className="text-slate-400 text-sm">Cargando…</p>
+        <p className="text-ivory-400 text-sm">Cargando…</p>
       ) : (
         <ReportsList reports={reports} />
       )}

@@ -41,11 +41,11 @@ export function ABTesting() {
   return (
     <DashboardLayout title="A/B Testing">
       <ABTestingConsent onConfirm={handleCreate} loading={creating} />
-      {error && <p className="mt-4 text-rose-600 text-sm">{error}</p>}
+      {error && <p className="mt-4 text-rose-400 text-sm">{error}</p>}
       <div className="mt-6">
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">Tests activos</h2>
+        <h2 className="text-sm font-semibold text-ivory-200 mb-3">Tests activos</h2>
         {loading ? (
-          <p className="text-slate-400 text-sm">Cargando…</p>
+          <p className="text-ivory-400 text-sm">Cargando…</p>
         ) : (
           <ActiveTests tests={tests} />
         )}

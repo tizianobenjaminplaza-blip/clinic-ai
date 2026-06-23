@@ -1,6 +1,17 @@
 import type { IPaymentRepository, IClinicRepository } from '../../domain/repositories/index.js';
 import type { SubscriptionService } from '../services/SubscriptionService.js';
 import type { EmailClient } from '../../infrastructure/external/EmailClient.js';
+import { env } from '../../config/env.js';
+
+// Lazy import keeps socket.io out of the test environment.
+async function emit(clinicId: string, event: string, payload: Record<string, unknown>) {
+  try {
+    const mod = await import('../../infrastructure/websocket/SocketServer.js');
+    mod.emitToClinic(clinicId, event as never, payload as never);
+  } catch {
+    /* socket not critical */
+  }
+}
 
 interface ActivateAgentInput {
   clinicId: string;
@@ -41,19 +52,32 @@ export class ActivateAgentUseCase {
     }
 
     await this.subscriptions.activate(input.clinicId);
+    await emit(input.clinicId, 'payment:activated', { amount: input.amount, currency: input.currency });
 
     const clinic = await this.clinics.findById(input.clinicId);
     if (clinic) {
+      const onboardingUrl = `${env.FRONTEND_URL}/onboarding/${clinic.id}`;
       await this.email.send(
         clinic.email,
-        '🎉 Tu agente IA de Clinic AI está activo',
+        '🎉 Pago recibido — activa y personaliza tu agente IA',
         `<h1>¡Bienvenido, ${clinic.name}!</h1>
-         <p>Tu agente IA ya responde por WhatsApp 24/7. Próximos pasos:</p>
+         <p>Tu pago se ha recibido correctamente y tu plan PRO ya está activo. 🎉</p>
+         <p>Para que tu agente IA empiece a vender por ti, personalízalo en 2 minutos:</p>
+         <p style="margin:24px 0">
+           <a href="${onboardingUrl}"
+              style="background:#10B981;color:#062a1e;padding:12px 22px;border-radius:10px;
+                     text-decoration:none;font-weight:600">
+             Activar y personalizar mi agente →
+           </a>
+         </p>
+         <p>En ese enlace podrás:</p>
          <ol>
-           <li>Conecta tu número de WhatsApp Business.</li>
-           <li>Carga tus servicios y FAQs en el dashboard.</li>
-           <li>Empieza a capturar leads automáticamente.</li>
-         </ol>`,
+           <li>Conectar tu número de WhatsApp Business.</li>
+           <li>Cargar tus servicios y precios.</li>
+           <li>Añadir tus preguntas frecuentes y tu equipo.</li>
+         </ol>
+         <p>En cuanto guardes, tu agente responderá a tus pacientes 24/7 con el contexto de tu clínica.</p>
+         <p style="color:#888;font-size:12px">Si el botón no funciona, copia este enlace: ${onboardingUrl}</p>`,
       );
     }
 

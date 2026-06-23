@@ -31,6 +31,8 @@ export class LeadTrackingService {
     if (lead.messageCount >= 2 && lead.status === 'NEW') {
       await this.leads.markEngaged(lead.id);
       getEmit().then((emit) => emit(clinicId, 'lead:engaged', { id: lead.id })).catch(() => {});
+      // Reflect the promotion in the returned object (DB is already updated).
+      lead.status = 'ENGAGED';
     }
     return lead;
   }
@@ -44,6 +46,11 @@ export class LeadTrackingService {
 
   async history(leadId: string, limit = 10): Promise<LeadInteraction[]> {
     return this.leads.recentInteractions(leadId, limit);
+  }
+
+  /** Demo helper: wipe a lead (and its interactions) so the demo can restart. */
+  async resetLead(clinicId: string, phone: string): Promise<void> {
+    await this.leads.deleteByClinicAndPhone(clinicId, phone);
   }
 
   /** Simple heuristic engagement score (0-100) — extension point for ML scoring. */

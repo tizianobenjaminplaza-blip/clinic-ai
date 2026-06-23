@@ -35,11 +35,13 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       where: { clinicId },
       create: {
         clinicId,
+        plan: 'PRO',
         status: 'ACTIVE',
         isAgentActive: true,
         startDate: new Date(),
       },
       update: {
+        plan: 'PRO',
         status: 'ACTIVE',
         isAgentActive: true,
         startDate: new Date(),

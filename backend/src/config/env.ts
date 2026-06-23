@@ -11,18 +11,20 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().min(1),
 
-  STRIPE_SECRET_KEY: z.string().min(1),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1),
-  STRIPE_PRICE_ID: z.string().min(1),
-  STRIPE_SUCCESS_URL: z.string().url(),
-  STRIPE_CANCEL_URL: z.string().url(),
+  // External keys are optional in dev so the app can boot in mock mode for
+  // free local testing. In production these should always be set.
+  STRIPE_SECRET_KEY: z.string().default('sk_test_placeholder'),
+  STRIPE_WEBHOOK_SECRET: z.string().default('whsec_placeholder'),
+  STRIPE_PRICE_ID: z.string().default('price_placeholder'),
+  STRIPE_SUCCESS_URL: z.string().url().default('http://localhost:3000/dashboard?payment=success'),
+  STRIPE_CANCEL_URL: z.string().url().default('http://localhost:3000/dashboard?payment=cancel'),
 
-  ANTHROPIC_API_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().default(''),
   ANTHROPIC_MODEL: z.string().default('claude-opus-4-8'),
 
-  WHATSAPP_VERIFY_TOKEN: z.string().min(1),
-  WHATSAPP_ACCESS_TOKEN: z.string().min(1),
-  WHATSAPP_PHONE_NUMBER_ID: z.string().min(1),
+  WHATSAPP_VERIFY_TOKEN: z.string().default('dev_verify_token'),
+  WHATSAPP_ACCESS_TOKEN: z.string().default('dev_access_token'),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().default('dev_phone_id'),
   WHATSAPP_API_VERSION: z.string().default('v21.0'),
 
   SMTP_HOST: z.string().optional(),

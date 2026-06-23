@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 interface Props {
   onConfirm: (variantCount: number) => void;
   loading: boolean;
@@ -5,23 +7,25 @@ interface Props {
 
 export function ABTestingConsent({ onConfirm, loading }: Props) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
-      <h3 className="font-semibold text-amber-800 mb-2">🔬 Crear nuevo test A/B</h3>
-      <p className="text-sm text-amber-700 mb-4">
+    <div className="card-premium p-6">
+      <h3 className="font-semibold text-amber-300 mb-2">🔬 Crear nuevo test A/B</h3>
+      <p className="text-sm text-ivory-400 mb-4 max-w-2xl">
         El agente IA generará variantes de mensajes para reactivar leads inactivos.
         Al confirmar, aceptas el uso de IA para experimentación sobre tus leads
         (cumplimiento GDPR/CCPA).
       </p>
       <div className="flex gap-3">
         {[2, 3, 4].map((n) => (
-          <button
+          <motion.button
             key={n}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
             disabled={loading}
             onClick={() => onConfirm(n)}
-            className="px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition"
+            className="px-4 py-2 bg-emerald-gradient text-carbon-900 text-sm font-medium rounded-xl shadow-glow disabled:opacity-50 transition"
           >
             {loading ? 'Generando…' : `${n} variantes`}
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>

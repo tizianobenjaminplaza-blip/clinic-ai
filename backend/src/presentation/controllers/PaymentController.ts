@@ -4,19 +4,57 @@ import { z } from 'zod';
 import { stripe } from '../../infrastructure/external/StripeClient.js';
 import { env } from '../../config/env.js';
 import type { ActivateAgentUseCase } from '../../application/usecases/ActivateAgentUseCase.js';
+import type { SubscriptionService } from '../../application/services/SubscriptionService.js';
+import type { OnboardingService } from '../../application/services/OnboardingService.js';
 
-const checkoutSchema = z.object({
-  clinicId: z.string().min(1),
+const signupSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).optional(),
 });
+const clinicIdSchema = z.object({ clinicId: z.string().min(1) });
+
+/** True when Stripe keys are still placeholders (local/demo, no real billing). */
+const stripeMockMode =
+  !env.STRIPE_SECRET_KEY ||
+  env.STRIPE_SECRET_KEY.includes('placeholder') ||
+  env.STRIPE_SECRET_KEY.includes('REEMPLAZA');
 
 export class PaymentController {
-  constructor(private readonly activateAgent: ActivateAgentUseCase) {}
+  constructor(
+    private readonly activateAgent: ActivateAgentUseCase,
+    private readonly subscriptions: SubscriptionService,
+    private readonly onboarding: OnboardingService,
+  ) {}
 
-  /** POST /api/payments/checkout → creates a Stripe Checkout session. */
+  /** GET /api/clinics/:clinicId/subscription → current plan/agent status. */
+  status = async (req: Request, res: Response): Promise<void> => {
+    const sub = await this.subscriptions.status(req.params.clinicId);
+    res.json({
+      plan: sub?.plan ?? 'NONE',
+      status: sub?.status ?? 'INACTIVE',
+      isAgentActive: !!sub?.isAgentActive && sub?.status === 'ACTIVE',
+      startDate: sub?.startDate ?? null,
+      stripeMockMode,
+    });
+  };
+
+  /**
+   * POST /api/payments/checkout → Stripe Checkout for a NEW clinic from the
+   * landing page. Stripe collects/uses the clinic email; the webhook then
+   * creates the clinic and activates it.
+   */
   createCheckout = async (req: Request, res: Response): Promise<void> => {
-    const parsed = checkoutSchema.safeParse(req.body);
+    const parsed = signupSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: 'clinicId is required' });
+      res.status(400).json({ error: 'Se requiere un email válido' });
+      return;
+    }
+
+    if (stripeMockMode) {
+      res.status(503).json({
+        error: 'Stripe no está configurado. Usa la activación de demostración.',
+        stripeMockMode: true,
+      });
       return;
     }
 
@@ -25,8 +63,8 @@ export class PaymentController {
       line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
       success_url: env.STRIPE_SUCCESS_URL,
       cancel_url: env.STRIPE_CANCEL_URL,
-      client_reference_id: parsed.data.clinicId,
-      metadata: { clinicId: parsed.data.clinicId },
+      customer_email: parsed.data.email,
+      metadata: { email: parsed.data.email, name: parsed.data.name ?? '' },
     });
 
     res.status(201).json({ url: session.url, sessionId: session.id });
@@ -57,17 +95,74 @@ export class PaymentController {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      const clinicId = session.metadata?.clinicId ?? session.client_reference_id;
-      if (clinicId) {
+      const email =
+        session.customer_details?.email ?? session.customer_email ?? session.metadata?.email;
+      if (email) {
+        // Create the clinic from the sale, then activate + email onboarding link.
+        const clinic = await this.onboarding.findOrCreateClinic(email, session.metadata?.name);
         await this.activateAgent.execute({
-          clinicId,
+          clinicId: clinic.id,
           stripeSessionId: session.id,
           amount: (session.amount_total ?? 0) / 100,
-          currency: session.currency ?? 'usd',
+          currency: session.currency ?? 'eur',
         });
       }
     }
 
     res.json({ received: true });
+  };
+
+  /**
+   * POST /api/payments/signup-activate → landing-page activation in demo mode.
+   * Creates the clinic from email, activates it, and returns the onboarding URL.
+   * Disabled in production (real payments must go through Stripe).
+   */
+  signupActivate = async (req: Request, res: Response): Promise<void> => {
+    const parsed = signupSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Se requiere un email válido' });
+      return;
+    }
+    if (!stripeMockMode) {
+      res.status(403).json({ error: 'La activación de demostración está deshabilitada en producción.' });
+      return;
+    }
+
+    const clinic = await this.onboarding.findOrCreateClinic(parsed.data.email, parsed.data.name);
+    await this.activateAgent.execute({
+      clinicId: clinic.id,
+      stripeSessionId: `demo_${Date.now()}`,
+      amount: 149,
+      currency: 'eur',
+    });
+
+    res.json({
+      clinicId: clinic.id,
+      onboardingUrl: `/onboarding/${clinic.id}`,
+    });
+  };
+
+  /**
+   * POST /api/payments/demo-activate → re-activate an EXISTING clinic from the
+   * dashboard billing page (demo mode only).
+   */
+  demoActivate = async (req: Request, res: Response): Promise<void> => {
+    const parsed = clinicIdSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'clinicId is required' });
+      return;
+    }
+    if (!stripeMockMode) {
+      res.status(403).json({ error: 'La activación de demostración está deshabilitada en producción.' });
+      return;
+    }
+
+    const result = await this.activateAgent.execute({
+      clinicId: parsed.data.clinicId,
+      stripeSessionId: `demo_${Date.now()}`,
+      amount: 149,
+      currency: 'eur',
+    });
+    res.json({ activated: result.activated, plan: 'PRO' });
   };
 }

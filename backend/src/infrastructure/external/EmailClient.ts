@@ -9,7 +9,14 @@ export class EmailClient {
   private readonly transporter: nodemailer.Transporter | null;
 
   constructor() {
-    if (env.SMTP_HOST && env.SMTP_PORT) {
+    // Treat placeholder credentials as "not configured" so local/demo runs
+    // log emails instead of trying (and failing) to authenticate against SMTP.
+    const isPlaceholder = (v?: string) =>
+      !v || v.includes('REEMPLAZA') || v.includes('placeholder');
+    const configured =
+      !!env.SMTP_HOST && !!env.SMTP_PORT && !isPlaceholder(env.SMTP_PASS);
+
+    if (configured) {
       this.transporter = nodemailer.createTransport({
         host: env.SMTP_HOST,
         port: env.SMTP_PORT,

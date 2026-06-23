@@ -4,6 +4,15 @@ import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { ConversionChart } from '../components/dashboard/ConversionChart';
 import { FunnelChart } from '../components/analytics/FunnelChart';
 import { MetricsCard } from '../components/dashboard/MetricsCard';
+import { Reveal } from '../components/motion/PageTransition';
+
+const statusMeta: Record<string, { icon: string; accent: 'emerald' | 'platinum' | 'neutral' }> = {
+  NEW: { icon: '○', accent: 'neutral' },
+  ENGAGED: { icon: '◐', accent: 'platinum' },
+  QUALIFIED: { icon: '◓', accent: 'platinum' },
+  CONVERTED: { icon: '●', accent: 'emerald' },
+  LOST: { icon: '✕', accent: 'neutral' },
+};
 
 export function Analytics() {
   const { clinicId } = useAuth();
@@ -11,19 +20,26 @@ export function Analytics() {
 
   return (
     <DashboardLayout title="Analytics">
-      {loading && <p className="text-slate-400">Cargando…</p>}
-      {error && <p className="text-rose-600">Error: {error}</p>}
+      {loading && <p className="text-ivory-400">Cargando…</p>}
+      {error && <p className="text-rose-400">Error: {error}</p>}
 
       {metrics && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {Object.entries(metrics.byStatus).map(([status, count]) => (
-              <MetricsCard key={status} label={status} value={count} />
-            ))}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            {Object.entries(metrics.byStatus).map(([status, count]) => {
+              const meta = statusMeta[status] ?? { icon: '•', accent: 'neutral' as const };
+              return (
+                <MetricsCard key={status} label={status} value={count} icon={meta.icon} accent={meta.accent} />
+              );
+            })}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ConversionChart data={metrics.leadsOverTime} />
-            <FunnelChart data={metrics.funnel} />
+            <Reveal>
+              <ConversionChart data={metrics.leadsOverTime} />
+            </Reveal>
+            <Reveal>
+              <FunnelChart data={metrics.funnel} />
+            </Reveal>
           </div>
         </>
       )}

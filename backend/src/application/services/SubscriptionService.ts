@@ -9,6 +9,10 @@ export class SubscriptionService {
     return !!sub?.isAgentActive && sub.status === 'ACTIVE';
   }
 
+  async status(clinicId: string): Promise<Subscription | null> {
+    return this.subscriptions.findByClinicId(clinicId);
+  }
+
   async activate(clinicId: string): Promise<Subscription> {
     return this.subscriptions.activate(clinicId);
   }

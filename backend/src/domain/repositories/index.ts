@@ -13,10 +13,23 @@ import type {
   VariantResult,
 } from '../entities/index.js';
 
+export interface ClinicContextInput {
+  name?: string;
+  whatsappPhone?: string;
+  services?: { name: string; description?: string; price: number }[];
+  faqs?: { question: string; answer: string }[];
+  teamMembers?: { name: string; role: string; email?: string }[];
+}
+
 export interface IClinicRepository {
   findById(id: string): Promise<Clinic | null>;
+  findByEmail(email: string): Promise<Clinic | null>;
   findByWhatsappPhone(whatsappPhone: string): Promise<Clinic | null>;
   getContext(clinicId: string): Promise<ClinicContext | null>;
+  /** Create a clinic from the sales/checkout flow (no context yet). */
+  create(data: { name: string; email: string; phone?: string; whatsappPhone?: string }): Promise<Clinic>;
+  /** Replace a clinic's agent context during onboarding/personalization. */
+  saveContext(clinicId: string, input: ClinicContextInput): Promise<void>;
 }
 
 export interface IPaymentRepository {
@@ -58,6 +71,7 @@ export interface ILeadRepository {
   listByClinic(clinicId: string, limit: number): Promise<Lead[]>;
   metrics(clinicId: string): Promise<LeadMetrics>;
   findByIdWithHistory(leadId: string): Promise<(Lead & { interactions: LeadInteraction[] }) | null>;
+  deleteByClinicAndPhone(clinicId: string, phone: string): Promise<void>;
 }
 
 export interface IABTestingRepository {

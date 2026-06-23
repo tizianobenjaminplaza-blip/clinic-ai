@@ -9,8 +9,8 @@ export function Leads() {
 
   return (
     <DashboardLayout title="Leads">
-      {loading && <p className="text-slate-400">Cargando leads…</p>}
-      {error && <p className="text-rose-600">Error: {error}</p>}
+      {loading && <p className="text-ivory-400">Cargando leads…</p>}
+      {error && <p className="text-rose-400">Error: {error}</p>}
       {!loading && <LeadMetricsPanel leads={leads} />}
     </DashboardLayout>
   );

@@ -19,6 +19,7 @@ import { AnalyticsService } from './application/services/AnalyticsService.js';
 import { ABTestingService } from './application/services/ABTestingService.js';
 import { ReportService } from './application/services/ReportService.js';
 import { TwoFactorAuthService } from './application/services/TwoFactorAuthService.js';
+import { OnboardingService } from './application/services/OnboardingService.js';
 import { ActivateAgentUseCase } from './application/usecases/ActivateAgentUseCase.js';
 
 import { PaymentController } from './presentation/controllers/PaymentController.js';
@@ -27,6 +28,8 @@ import { AnalyticsController } from './presentation/controllers/AnalyticsControl
 import { ABTestingController } from './presentation/controllers/ABTestingController.js';
 import { ReportController } from './presentation/controllers/ReportController.js';
 import { AuthController } from './presentation/controllers/AuthController.js';
+import { DemoController } from './presentation/controllers/DemoController.js';
+import { OnboardingController } from './presentation/controllers/OnboardingController.js';
 
 // Repositories
 const clinicRepo = new ClinicRepository(prisma);
@@ -47,6 +50,7 @@ const subscriptionService = new SubscriptionService(subscriptionRepo);
 const analyticsService = new AnalyticsService(leadRepo);
 const abTestingService = new ABTestingService(abTestingRepo, clinicRepo, agentService);
 const twoFAService = new TwoFactorAuthService(emailClient);
+const onboardingService = new OnboardingService(clinicRepo);
 const reportService = new ReportService(reportRepo, clinicRepo, analyticsService, emailClient);
 const whatsappService = new WhatsAppService(
   clinicRepo,
@@ -66,10 +70,12 @@ const activateAgentUseCase = new ActivateAgentUseCase(
 
 // Controllers
 export const container = {
-  paymentController: new PaymentController(activateAgentUseCase),
+  paymentController: new PaymentController(activateAgentUseCase, subscriptionService, onboardingService),
+  onboardingController: new OnboardingController(onboardingService),
   whatsappController: new WhatsAppController(whatsappService),
   analyticsController: new AnalyticsController(analyticsService),
   abTestingController: new ABTestingController(abTestingService),
   reportController: new ReportController(reportService),
   authController: new AuthController(twoFAService),
+  demoController: new DemoController(clinicRepo, leadTrackingService, agentService),
 };

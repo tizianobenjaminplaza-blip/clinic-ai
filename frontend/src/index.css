@@ -1,12 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply text-ivory-200 antialiased;
   margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #EAEefb;
+  /* Fixed wave background image (drop the file at frontend/public/bg.jpg).
+     A vertical scrim keeps text legible over the bright bottom of the image.
+     Falls back to a deep-blue gradient until the image is present. */
+  background:
+    linear-gradient(180deg, rgba(6,8,22,0.40) 0%, rgba(6,8,22,0.52) 55%, rgba(6,8,22,0.80) 100%),
+    url('/bg.jpg') center top / cover no-repeat fixed,
+    linear-gradient(180deg, #0a0e24 0%, #060814 60%, #1a1c3a 100%);
+  background-color: #060814;
+  min-height: 100vh;
+}
+
+@layer components {
+  /* ── Liquid glass, 100% transparent: NO fill, light refraction so the
+        background shows through clearly, bright specular rim. ──────────── */
+  .glass {
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    background: transparent;
+    backdrop-filter: blur(4px) saturate(135%) url(#liquid-glass);
+    -webkit-backdrop-filter: blur(4px) saturate(135%);
+    box-shadow:
+      0 8px 30px -10px rgba(0, 0, 0, 0.45),
+      inset 0 1px 1px rgba(255, 255, 255, 0.35),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-strong {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: transparent;
+    backdrop-filter: blur(7px) saturate(140%) url(#liquid-glass);
+    -webkit-backdrop-filter: blur(7px) saturate(140%);
+    box-shadow:
+      0 8px 34px -12px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.4),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Refined emerald display text — subtle, slow shimmer */
+  .text-emerald-grad {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(110deg, #A7F3D0 0%, #34D399 45%, #6EE7B7 70%, #059669 100%);
+    background-size: 200% auto;
+    animation: emerald-shift 10s ease-in-out infinite;
+  }
+
+  /* Serif display utility */
+  .font-display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-optical-sizing: auto;
+  }
+
+  /* Premium card = 100% transparent liquid glass; background shows through */
+  .card-premium {
+    position: relative;
+    isolation: isolate;
+    border-radius: 1.1rem;
+    background: transparent;
+    backdrop-filter: blur(5px) saturate(140%) url(#liquid-glass);
+    -webkit-backdrop-filter: blur(5px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      0 12px 40px -14px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.32),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease, border-color 0.45s ease;
+  }
+  /* Bright white light catch along the top edge ("wet glass" rim) */
+  .card-premium::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    z-index: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  }
+  .card-premium:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.34);
+    box-shadow:
+      0 28px 64px -18px rgba(20, 30, 90, 0.55),
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset 0 1px 1px rgba(255, 255, 255, 0.36);
+  }
+
+  /* Standalone liquid glass surface */
+  .liquid-glass {
+    position: relative;
+    isolation: isolate;
+    background: transparent;
+    backdrop-filter: blur(6px) saturate(140%) url(#liquid-glass);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 10px 44px -12px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.32);
+    overflow: hidden;
+  }
+  .liquid-glass::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    z-index: -1;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  }
+}
+
+/* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1D2620 transparent;
+}
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #1D2620;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

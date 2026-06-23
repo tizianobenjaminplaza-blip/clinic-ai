@@ -4,14 +4,22 @@ import { asyncHandler } from '../../infrastructure/middleware/errorMiddleware.js
 
 const {
   paymentController, whatsappController, analyticsController,
-  abTestingController, reportController, authController,
+  abTestingController, reportController, authController, demoController,
+  onboardingController,
 } = container;
 
 export const router = Router();
 
-// ─── Payments ─────────────────────────────────────────────
-// JSON body for checkout.
+// ─── Payments / sales funnel ──────────────────────────────
+// Landing → Stripe checkout (new clinic) or demo signup-activate.
 router.post('/payments/checkout', json(), asyncHandler(paymentController.createCheckout));
+router.post('/payments/signup-activate', json(), asyncHandler(paymentController.signupActivate));
+router.post('/payments/demo-activate', json(), asyncHandler(paymentController.demoActivate));
+router.get('/clinics/:clinicId/subscription', asyncHandler(paymentController.status));
+
+// ─── Onboarding / personalization ─────────────────────────
+router.get('/clinics/:clinicId/context', asyncHandler(onboardingController.get));
+router.post('/clinics/:clinicId/onboarding', json(), asyncHandler(onboardingController.save));
 
 // Stripe webhook needs the RAW body for signature verification — note express.raw().
 router.post(
@@ -44,3 +52,7 @@ router.get('/leads/:leadId', asyncHandler(analyticsController.leadDetail));
 // ─── Auth / 2FA ───────────────────────────────────────────
 router.post('/auth/2fa/send',   json(), asyncHandler(authController.sendCode));
 router.post('/auth/2fa/verify', json(), authController.verifyCode);
+
+// ─── Demo (live agent simulator, no Meta) ─────────────────
+router.post('/demo/message', json(), asyncHandler(demoController.message));
+router.post('/demo/reset',   json(), asyncHandler(demoController.reset));

@@ -15,8 +15,11 @@ describe('ABTestingService', () => {
 
   const clinicRepo = {
     findById: vi.fn(),
+    findByEmail: vi.fn(),
     findByWhatsappPhone: vi.fn(),
     getContext: vi.fn(),
+    create: vi.fn(),
+    saveContext: vi.fn(),
   } satisfies IClinicRepository;
 
   const agent = { generateMessageVariants: vi.fn() } as unknown as AgentService;

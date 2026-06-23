@@ -109,6 +109,16 @@ export class LeadRepository implements ILeadRepository {
     return rows.map(toLead);
   }
 
+  async deleteByClinicAndPhone(clinicId: string, phone: string): Promise<void> {
+    const lead = await this.prisma.lead.findUnique({
+      where: { clinicId_phone: { clinicId, phone } },
+      select: { id: true },
+    });
+    if (!lead) return;
+    await this.prisma.leadInteraction.deleteMany({ where: { leadId: lead.id } });
+    await this.prisma.lead.delete({ where: { id: lead.id } });
+  }
+
   async findByIdWithHistory(leadId: string) {
     const row = await this.prisma.lead.findUnique({
       where: { id: leadId },

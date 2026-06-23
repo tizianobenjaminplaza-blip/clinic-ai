@@ -31,41 +31,41 @@ export function NotificationCenter() {
     <div className="relative" ref={ref}>
       <button
         onClick={toggle}
-        className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition"
+        className="relative p-2 rounded-xl glass text-ivory-300 hover:text-ivory-100 transition"
         aria-label="Notificaciones"
       >
         <span className="text-xl">🔔</span>
         {unread > 0 && (
-          <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-carbon-900">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-700">Notificaciones</span>
+        <div className="absolute right-0 top-12 w-80 glass-strong rounded-2xl z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <span className="text-sm font-semibold text-ivory-200">Notificaciones</span>
             <button
               onClick={markAllRead}
-              className="text-xs text-brand-600 hover:underline"
+              className="text-xs text-emerald-300 hover:text-emerald-200"
             >
               Marcar todo leído
             </button>
           </div>
-          <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+          <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
             {notifications.length === 0 && (
-              <p className="text-center text-slate-400 text-sm py-8">Sin notificaciones</p>
+              <p className="text-center text-ivory-500 text-sm py-8">Sin notificaciones</p>
             )}
             {notifications.map((n) => (
               <div
                 key={n.id}
                 className={`px-4 py-3 flex items-start gap-3 text-sm ${
-                  n.read ? 'bg-white' : 'bg-blue-50'
+                  n.read ? '' : 'bg-emerald-500/10'
                 }`}
               >
-                <div className="flex-1 text-slate-700 leading-snug">{n.text}</div>
-                <div className="text-xs text-slate-400 shrink-0 mt-0.5">{relativeTime(n.ts)}</div>
+                <div className="flex-1 text-ivory-300 leading-snug">{n.text}</div>
+                <div className="text-xs text-ivory-500 shrink-0 mt-0.5">{relativeTime(n.ts)}</div>
               </div>
             ))}
           </div>
